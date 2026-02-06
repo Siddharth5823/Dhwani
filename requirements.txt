@@ -1,0 +1,6 @@
+vosk
+sounddevice
+numpy
+openwakeword
+tflite-runtime
+

@@ -1,0 +1,39 @@
+1. Abstract
+
+We present Dhwani, a fully offline, low-latency voice assistant engineered specifically for Hindi-speaking users. Built on the Raspberry Pi 4B, Dhwani challenges the reliance on cloud-based giants like Alexa by proving that powerful AI can run on the edge. By optimizing the software stack with Arm-specific libraries (KleidiAI, NEON intrinsics via ONNX Runtime), we achieved a command response time of under 1.5 seconds without using a GPU or internet connection. This project addresses critical gaps in privacy and regional language accessibility.
+2. The Problem & Motivation
+
+Most commercial voice assistants have two major flaws: they send private living room conversations to the cloud, and they often struggle with regional Indian languages in areas with poor internet connectivity. We wanted to build something different: a system that respects user privacy by processing data locally and speaks Hindi fluently. Our goal was to push the Raspberry Pi 4 to its absolute limit, squeezing every drop of performance out of its Arm CPU to make the experience feel "instant" rather than sluggish.
+3. System Architecture
+
+We designed a "State Machine" architecture to save power and CPU cycles. The system doesn't just "listen" all the time; it sleeps intelligently.
+
+    Stage 1: Voice Activity Detection (VAD): We use Silero VAD to monitor the microphone efficiently. It ignores fan noise and silence, ensuring the heavy AI models only wake up when a human is actually speaking.
+
+    Stage 2: Wake Word Detection: A lightweight TFLite model listens specifically for our custom trigger phrase, "Namaste Pi".
+
+    Stage 3: Speech Recognition (ASR): Once triggered, Vosk (Kaldi) takes over. It transcribes Hindi audio into text using Streaming Inference—meaning it processes the start of your sentence while you are still finishing the end of it.
+
+    Stage 4: Intent Parsing: Our custom Python logic maps the Hindi text to specific actions (e.g., turning on a light or checking the time).
+
+    Stage 5: Speech Synthesis (TTS): Finally, Piper TTS generates natural-sounding Hindi speech using a neural ONNX model.
+
+4. Arm-Specific Optimizations (The "Secret Sauce")
+
+To hit the sub-2-second target on a Cortex-A72 CPU, we avoided generic Python implementations.
+
+    KleidiAI & NEON Vectorization: The core of our speed comes from how we do math. Standard software multiplies numbers one by one (Scalar). By using ONNX Runtime and XNNPACK, our project leverages Arm NEON SIMD (Single Instruction, Multiple Data). This allows the Pi's CPU to multiply 4 numbers in a single clock cycle. Effectively, we are using KleidiAI micro-kernels implicitly through these high-performance libraries.
+
+    Quantization: We utilized 8-bit Quantized models (int8). This makes the models 4x smaller, which is crucial because the Raspberry Pi 4 has limited memory bandwidth. Smaller models mean faster data fetching and quicker answers.
+
+    Zero-Copy Audio: We used Linux pipes (|) to stream audio directly from the TTS engine to the speaker driver. This prevents the system from writing temporary audio files to the SD card, shaving off ~300ms of latency.
+
+5. Challenges We Overcame
+
+    The Latency Trap: Initially, we tried using raw PyTorch models, but the response time was over 4 seconds. We switched to Vosk and ONNX, which dropped latency to 1.2 seconds.
+
+    Headless Audio Nightmares: Configuring audio on a headless Pi (Bookworm OS) was difficult due to permission issues. We solved this by configuring PipeWire with user lingering enabled.
+
+6. Conclusion
+
+Dhwani proves that you don't need a $1000 GPU to build useful AI. By carefully selecting software that understands the underlying Arm hardware, we created a Hindi voice assistant that is fast, private, and runs entirely offline. This project is a step toward making AI accessible to the next billion users.
