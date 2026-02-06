@@ -17,8 +17,12 @@ tar -xvf $MODEL_DIR/piper_linux_aarch64.tar.gz -C $MODEL_DIR
 rm $MODEL_DIR/piper_linux_aarch64.tar.gz
 
 echo "Downloading Hindi Voice (ONNX)..."
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/en_IN/alma/medium/hi_IN-alma-medium.onnx -P $MODEL_DIR
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/en_IN/alma/medium/hi_IN-alma-medium.onnx.json -P $MODEL_DIR
+wget -O models/hi_IN-priyamvada-medium.onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/priyamvada/medium/hi_IN-priyamvada-medium.onnx
+wget -O models/hi_IN-priyamvada-medium.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/priyamvada/medium/hi_IN-priyamvada-medium.onnx.json
+
+#echo Downloading Hindi Voice (ONNX)...
+#wget https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/en_IN/alma/medium/hi_IN-alma-medium.onnx -P $MODEL_DIR
+#wget https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/en_IN/alma/medium/hi_IN-alma-medium.onnx.json -P $MODEL_DIR
 
 echo "------------------------------------------------"
 echo "All models downloaded successfully to '$MODEL_DIR/'"
