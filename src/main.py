@@ -1,87 +1,83 @@
 import sounddevice as sd
-import queue
+import numpy as np
+import os
 import sys
-import time
-
-# Custom Modules
-import config
-import wakeword
-import stt
-import tts
 import datetime
 
-# --- AUDIO QUEUE ---
-q = queue.Queue()
-
-def callback(indata, frames, time, status):
-    """Puts audio into the queue efficiently"""
-    if status:
-        print(status, file=sys.stderr)
-    q.put(bytes(indata))
+# Local imports
+import config
+import wakeword
+# Note: We do NOT import stt or tts here to save RAM
 
 def main():
-    print("\n-------------------------")
-    print("   DHWANI (Pi Edition)   ")
-    print("-------------------------")
+    print("\n" + "="*30)
+    print("   DHWANI (Pi Lite Edition)   ")
+    print("="*30)
 
-    # 1. SETUP: Load Models
+    # 1. Load the lightweight Wake Word model first
     if not wakeword.load_model():
-        return # Stop if wake word model is missing
+        print("❌ Failed to load Wake Word engine.")
+        return
     
-    # (Optional) Verify other models exist
-    # stt.init_model() # You might want to add an init function in stt.py too
+    # Check if we are using the correct USB device ID
+    # device=1 is standard for USB soundcards on Pi
+    USB_MIC_ID = 1 
 
-    print("\n🎙️  System Online. Waiting for 'Hey Jarvis'...")
+    print("\n✅ System Ready.")
+    print(f"🎙️  Listening on Device {USB_MIC_ID} for 'Hey Jarvis'...")
 
-    # 2. MAIN LOOP
-    # We open the mic stream ONCE. 
-    # NOTE: To switch between Wake Word and STT on the same stream, 
-    # we need to pass the audio data to the right function.
-    
-    with sd.RawInputStream(samplerate=config.SAMPLE_RATE, 
-                           blocksize=config.CHUNK_SIZE, 
-                           dtype='int16', 
-                           channels=1, 
-                           callback=callback):
-        
-        while True:
+    while True:
+        try:
             # --- PHASE 1: WAKE WORD DETECTION ---
-            chunk = q.get()
+            # We open the mic stream just for detection
+            with sd.InputStream(device=None,
+                                channels=1, 
+                                samplerate=16000, 
+                                blocksize=config.CHUNK_SIZE) as stream:
+                
+                while True:
+                    data, overflow = stream.read(config.CHUNK_SIZE)
+                    if wakeword.detect(data):
+                        print("\n✨ WAKE WORD DETECTED! ✨")
+                        # Instant beep using system tool (fast)
+                        os.system("aplay -q /usr/share/sounds/alsa/Front_Center.wav &")
+                        break # Exit the 'with' block to close the mic stream
             
-            if wakeword.detect(chunk):
-                print("\n✨ WAKE WORD DETECTED! ✨")
-                tts.speak("Ji?")  # Acknowledge
-                
-                # Clear queue so old audio doesn't confuse the command listener
-                with q.mutex:
-                    q.queue.clear()
-                
-                # --- PHASE 2: COMMAND LISTENING (Vosk) ---
-                print("listening for command...")
-                
-                # We need a way to feed the SAME queue to STT
-                # Ideally, stt.listen() should accept 'q' as an argument
-                # or we temporarily handle STT logic here for simplicity.
-                
-                command = stt.listen_from_queue(q) # <--- We need to add this to stt.py
-                print(f"User said: {command}")
+            # --- PHASE 2: LAZY LOAD HEAVY MODELS ---
+            # Now that we know the user is talking, we load the ears
+            print("⚡ Waking up STT engine...")
+            import stt 
+            import tts
+            
+            print("🗣️  Dhwani: Ji?")
+            command = stt.listen()
+            print(f"User said: {command}")
 
-                # --- PHASE 3: LOGIC ---
-                if "time" in command:
-                    now = datetime.datetime.now().strftime("%I:%M %p")
-                    tts.speak(f"Samay {now} hai")
-                
-                elif "namaste" in command:
-                    tts.speak("Namaste! Kaise hain aap?")
-                
-                elif "exit" in command:
-                    tts.speak("Alvida.")
-                    break
+            # --- PHASE 3: COMMAND LOGIC ---
+            if not command:
+                print(">> (No speech detected)")
+            
+            elif "time" in command or "samay" in command:
+                now = datetime.datetime.now().strftime("%I:%M %p")
+                tts.speak(f"Sir, the time is {now}")
 
-                elif command == "":
-                    tts.speak("Kuch sunayi nahi diya.")
+            elif "namaste" in command or "hello" in command:
+                tts.speak("Namaste! Kaise hain aap?")
 
-                print("\n🎙️  Waiting for 'Hey Jarvis'...")
+            elif "stop" in command or "exit" in command:
+                tts.speak("Goodbye, Sir.")
+                sys.exit(0)
+            
+            else:
+                tts.speak(f"You said: {command}")
+            
+            print("\n🎙️  Returning to standby...")
+
+        except Exception as e:
+            print(f"\n❌ Error: {e}")
+            print("Restarting in 2 seconds...")
+            import time
+            time.sleep(2)
 
 if __name__ == "__main__":
     main()

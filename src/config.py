@@ -33,8 +33,8 @@ WAKEWORD_MODEL_PATH = os.path.join(MODELS_DIR, "hey_jarvis_v0.1.onnx")
 VOSK_MODEL_PATH = os.path.join(MODELS_DIR, "vosk-model-small-hi-0.22")
 
 # 3. Text-to-Speech (Piper)
-PIPER_BINARY = os.path.join(MODELS_DIR, "piper", "piper")
-TTS_MODEL_PATH = os.path.join(MODELS_DIR, "hi_IN-priyamvada-medium.onnx")
+PIPER_PATH = os.path.join(MODELS_DIR, "piper", "piper")
+TTS_MODEL = os.path.join(MODELS_DIR, "hi_IN-priyamvada-medium.onnx")
 
 # --- AUDIO SETTINGS ---
 SAMPLE_RATE = 16000

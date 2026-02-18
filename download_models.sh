@@ -28,15 +28,15 @@ else
     echo "✅ Piper Voice already exists."
 fi
 # 3. Download OPENWAKEWORD (Trigger) - Hey Jarvis
-if [ ! -f "$MODELS_DIR/hey_jarvis_v0.1.onnx" ]; then
-    echo "⬇️  Downloading Wake Word (Hey Jarvis)..."
-    # We navigate into the folder, let Python download it, then come back
-    cd "$MODELS_DIR"
-    python3 -c "import openwakeword.utils; openwakeword.utils.download_models(['hey_jarvis_v0.1'])"
-    cd ..
-else
-    echo "✅ Wake Word Model already exists."
-fi
+#if [ ! -f "$MODELS_DIR/hey_jarvis_v0.1.onnx" ]; then
+#    echo "⬇️  Downloading Wake Word (Hey Jarvis)..."
+#    # We navigate into the folder, let Python download it, then come back
+#    cd "$MODELS_DIR"
+#    python3 -c "import openwakeword.utils; openwakeword.utils.download_models(['hey_jarvis_v0.1'])"
+#    cd ..
+#else
+#    echo "✅ Wake Word Model already exists."
+#fi
 
 # 3. Download OPENWAKEWORD (Trigger) - Hey Jarvis
 #if [ ! -f "$MODELS_DIR/hey_jarvis_v0.1.onnx" ]; then
@@ -46,6 +46,19 @@ fi
 #else
  #   echo "✅ Wake Word Model already exists."
 #fi
+
+# 3. Download OPENWAKEWORD (Trigger) - Hey Jarvis
+if [ ! -f "$MODELS_DIR/hey_jarvis_v0.1.onnx" ]; then
+    echo "⬇️  Downloading Wake Word (Hey Jarvis)..."
+    cd "$MODELS_DIR" || exit
+#    python3 -c "import openwakeword.utils; openwakeword.utils.download_models(['hey_jarvis_v0.1'])"
+# ... inside the Hey Jarvis section ...
+     python3 -c "import openwakeword.utils; openwakeword.utils.download_models(['hey_jarvis_v0.1'], target_dir='$MODELS_DIR')"
+# ...
+   cd ..
+else
+    echo "✅ Wake Word Model already exists."
+fi
 
 echo "---------------------------------"
 echo "🎉 All Models Ready in '$MODELS_DIR'!"
