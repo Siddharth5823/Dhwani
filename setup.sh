@@ -2,10 +2,10 @@
 
 echo "🚀 STARTING DHWANI SETUP..."
 
-# 1. Update System & Install Dependencies
+# 1. Install System Libraries
 echo "🔧 Installing System Libraries..."
 sudo apt update
-sudo apt install -y python3-pip python3-venv portaudio19-dev libsndfile1 espeak-ng git wget unzip
+sudo apt install -y python3-pip python3-venv portaudio19-dev libasound2-dev libsndfile1 espeak-ng git wget unzip swig
 
 # 2. Set up Python Environment
 if [ ! -d "venv" ]; then
@@ -13,21 +13,16 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
-# Activate venv
 source venv/bin/activate
 
-# 3. Install Python Libraries
+# 3. Install Python Libraries (Removing OWW/ONNX-Runtime bloat)
 echo "📦 Installing Python Dependencies..."
 pip install --upgrade pip
-# Install openwakeword specifically + other requirements
-pip install openwakeword onnxruntime sounddevice vosk numpy
+# We keep Piper and Vosk, but remove openwakeword
+pip install pocketsphinx vosk pyaudio numpy
 
-# 4. Run the Model Downloader [THIS IS THE ONE-CLICK MAGIC]
-echo "📥 Checking Models..."
+# 4. Run Model Downloader
 chmod +x download_models.sh
 ./download_models.sh
 
-echo "---------------------------------------------"
 echo "✅ SETUP COMPLETE!"
-echo "👉 To start: 'source venv/bin/activate' then 'python src/main.py'"
-echo "---------------------------------------------"
