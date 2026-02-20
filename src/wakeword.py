@@ -1,5 +1,16 @@
 import os
 from pocketsphinx import LiveSpeech
+import sounddevice as sd
+
+def get_pulse_device_id():
+    # Loop through all audio devices
+    for index, device in enumerate(sd.query_devices()):
+        # If the name contains 'pulse', return that index
+        if 'pulse' in device['name'].lower():
+            return index
+    return None # Fallback just in case
+
+PULSE_ID = get_pulse_device_id()
 
 def detect():
 
@@ -9,7 +20,8 @@ def detect():
     speech = LiveSpeech(
         keyphrase='dhwani',
         kws_threshold=1e-20,
-        dict=dict_path 
+        dict=dict_path,
+        audio_device=PULSE_ID
     )
     
     for phrase in speech:

@@ -7,6 +7,16 @@ import config
 
 _vosk_model = None
 
+def get_pulse_device_id():
+    # Loop through all audio devices
+    for index, device in enumerate(sd.query_devices()):
+        # If the name contains 'pulse', return that index
+        if 'pulse' in device['name'].lower():
+            return index
+    return None # Fallback just in case
+
+PULSE_ID = get_pulse_device_id()
+
 def load_model():
     global _vosk_model
     if _vosk_model is None:
@@ -28,7 +38,7 @@ def listen():
     
     with sd.RawInputStream(samplerate=16000, 
                            blocksize=8000, 
-                           device=None,
+                           device=PULSE_ID,
                            dtype='int16', 
                            channels=1) as stream:
         
