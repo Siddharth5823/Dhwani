@@ -20,12 +20,12 @@ def logic(command):
         print("मैं अच्छी हूँ")
         speak("मैं अच्छी हूँ")
     
-    elif any(word in command for word in ["समय ", "क्या","रहा","टाइम"]):
+    elif any(word in command for word in ["समय ","टाइम"]):
         now = datetime.datetime.now()
         print(f"अभी {now.hour} बज कर {now.minute} मिनट हो रहे हैं।")
         speak(f"अभी {now.hour} बज कर {now.minute} मिनट हो रहे हैं।")
 
-    elif any(word in command for word in ["तारीख ", "किया","दिन","डेट"]):
+    elif any(word in command for word in ["तारीख ","दिन","डेट"]):
         now = datetime.datetime.now()
         print(f"आज {now.day} तारीख है।")
         speak(f"आज {now.day} तारीख है।")
